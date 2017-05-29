@@ -57,8 +57,14 @@
 						var commandArr = $(this).data(options.commandRole).split(' '),
 							command = commandArr[0];
 
+						if(command in options.customCommands && "updateToolbar" in options.customCommands[command]) {
+							if(options.customCommands[command].updateToolbar.call(this, commandArr.slice(1), selectedRange, getCurrentRange, editor)) {
+								$(this).addClass(options.activeToolbarClass);
+							} else {
+								$(this).removeClass(options.activeToolbarClass);
+							}
 						// If the command has an argument and its value matches this button. == used for string/number comparison
-						if (commandArr.length > 1 && document.queryCommandEnabled(command) && document.queryCommandValue(command) === commandArr[1]) {
+						} else if (commandArr.length > 1 && document.queryCommandEnabled(command) && document.queryCommandValue(command) === commandArr[1]) {
 							$(this).addClass(options.activeToolbarClass);
 						// Else if the command has no arguments and it is active
 						} else if (commandArr.length === 1 && document.queryCommandEnabled(command) && document.queryCommandState(command)) {
@@ -77,7 +83,9 @@
 
 				var parts = commandWithArgs.split('-');
 
-				if ( parts.length === 1 ) {
+				if (command in options.customCommands && "execCommand" in options.customCommands[command]) {
+					options.customCommands[command].execCommand.call(window, commandArr, selectedRange, getCurrentRange, editor);
+				} else if( parts.length === 1 ) {
 					document.execCommand(command, false, args);
 				}
 				else if ( parts[0] === 'format' && parts.length === 2 ) {
@@ -306,6 +314,7 @@
 		selectionColor: 'darkgrey',
 		dragAndDropImages: true,
 		keypressTimeout: 200,
-		fileUploadError: function (reason, detail) { console.log("File upload error", reason, detail); }
+		fileUploadError: function (reason, detail) { console.log("File upload error", reason, detail); },
+		customCommands: { }
 	};
 }(window.jQuery));

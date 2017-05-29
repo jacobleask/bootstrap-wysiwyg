@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  	<head>
+    	<meta charset="utf-8">
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+    	<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>A tiny, opensource, Bootstrap WYSIWYG rich text editor</title>
+		<link href="../bower_components/google-code-prettify/src/prettify.css" rel="stylesheet" />
+		<link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../bower_components/fontawesome/css/font-awesome.min.css" rel="stylesheet" />
+		<link href="./css/style.css" rel="stylesheet" />
+
+		<style type="text/css">
+			.alpha-list {
+				list-style-type: lower-alpha;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="container">
+			<h1>Simple Editor with Toolbar</h1>
+			<div class="btn-toolbar" data-role="editor-toolbar" data-target="#editor">
+				<div class="btn-group">
+					<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="Heading"><span class="fa fa-header"></span>&nbsp;<span class="caret"></span></button>
+					<ul class="dropdown-menu description">
+						<li><a data-edit="heading H1"><h1>Heading 1</h1></a></li>
+						<li><a data-edit="heading H2"><h2>Heading 2</h2></a></li>
+						<li><a data-edit="heading H3"><h3>Heading 3</h3></a></li>
+						<li><a data-edit="heading H4"><h4>Heading 4</h4></a></li>
+						<li><a data-edit="unwrapHeading">Remove heading</a></li>
+					</ul>
+				</div>
+				<div class="btn-group">
+					<a class="btn btn-default" data-edit="bold" title="Bold (Ctrl/Cmd+B)"><i class="fa fa-bold"></i></a>
+					<a class="btn btn-default" data-edit="italic" title="Italic (Ctrl/Cmd+I)"><i class="fa fa-italic"></i></a>
+					<a class="btn btn-default" data-edit="strikethrough" title="Strikethrough"><i class="fa fa-strikethrough"></i></a>
+					<a class="btn btn-default" data-edit="underline" title="Underline (Ctrl/Cmd+U)"><i class="fa fa-underline"></i></a>
+				</div>
+				<div class="btn-group">
+					<div class="btn-group">
+						<button type="button" class="btn btn-default" data-edit="insertorderedlist" title="Number list">
+							<span class="fa fa-list-ol"></span>&nbsp;
+						</button>
+						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+							<span class="caret"></span>&nbsp;
+						</button>
+						<ul class="dropdown-menu list-type-dropdown">
+							<li>
+								<a href="#"data-edit="insertorderedlist numer" title="Number list">Number list</a>
+							</li>
+							<li>
+								<a href="#" data-edit="insertorderedlist alpha" title="Alpha list">Alpha list</a>
+							</li>
+						</ul>
+					</div>
+					<a class="btn btn-default" data-edit="outdent" title="Reduce indent (Shift+Tab)"><i class="fa fa-outdent"></i></a>
+					<a class="btn btn-default" data-edit="indent" title="Indent (Tab)"><i class="fa fa-indent"></i></a>
+				</div>
+				<div class="btn-group">
+					<a class="btn btn-default" data-edit="justifyleft" title="Align Left (Ctrl/Cmd+L)"><i class="fa fa-align-left"></i></a>
+					<a class="btn btn-default" data-edit="justifycenter" title="Center (Ctrl/Cmd+E)"><i class="fa fa-align-center"></i></a>
+					<a class="btn btn-default" data-edit="justifyright" title="Align Right (Ctrl/Cmd+R)"><i class="fa fa-align-right"></i></a>
+					<a class="btn btn-default" data-edit="justifyfull" title="Justify (Ctrl/Cmd+J)"><i class="fa fa-align-justify"></i></a>
+				</div>
+				<div class="btn-group">
+						<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="Hyperlink"><i class="fa fa-link"></i></a>
+						<div class="dropdown-menu input-append">
+							<input placeholder="URL" type="text" data-edit="createLink" />
+							<button class="btn" type="button">Add</button>
+						</div>
+					</div>
+					<div class="btn-group">
+						<a class="btn btn-default" data-edit="unlink" title="Remove Hyperlink"><i class="fa fa-unlink"></i></a>
+						<a id="picBtn" class="btn btn-default" title="Insert picture (or just drag & drop)" onclick="$('#pictureBtn').click();"><i class="fa fa-picture-o"></i></a>
+
+                        <input id="pictureBtn" class="imgUpload" type="file" data-edit="insertImage" data-role="magic-overlay" />
+					</div>
+				<div class="btn-group">
+					<a class="btn btn-default" data-edit="undo" title="Undo (Ctrl/Cmd+Z)"><i class="fa fa-undo"></i></a>
+					<a class="btn btn-default" data-edit="redo" title="Redo (Ctrl/Cmd+Y)"><i class="fa fa-repeat"></i></a>
+				</div>
+			</div>
+			<div id="editor" class="lead" data-placeholder="This is a basic example with a simple toolbar."></div>
+			<div id="editorPreview"></div>
+			<p style="text-align: center;">
+				<a class="btn btn-large btn-default jumbo" href="#!" onClick="$('#editorPreview').html($('#editor').html());">Submit</a>
+			</p>
+		</div>
+
+		<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+		<script src="../bower_components/jquery.hotkeys/jquery.hotkeys.js"></script>
+		<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<script src="../bower_components/google-code-prettify/src/prettify.js"></script>
+		<script src="../src/bootstrap-wysiwyg.js"></script>
+		<script type='text/javascript'>
+
+			var getParentElement = function(node) {
+					while("nodeType" in node && node.nodeType !== 1) node = node.parentElement;
+					return node;
+			}
+
+			$('#editor').wysiwyg({
+				customCommands: {
+					unwrapHeading: {
+						execCommand: function(commandArr, selectedRange) {
+							const container = selectedRange.startContainer.parentNode;
+                			$(container).filter("h1,h2,h3,h4,h5,h6").contents().unwrap();
+						}
+					},
+
+					insertorderedlist: {
+						updateToolbar: function(commandArr, selectedRange) {
+							if(commandArr.length > 0 && document.queryCommandState("insertorderedlist")) {
+								const isAlphaButton = commandArr[0] === "alpha";
+								const isAlphaSel = $(getParentElement(selectedRange.startContainer)).closest("ol").hasClass("alpha-list");
+
+								//this refers to the button that has the command in commandArr
+								if(isAlphaButton === isAlphaSel) 
+									$(this).addClass(options.activeToolbarClass)
+								else
+									$(this).removeClass(options.activeToolbarClass);
+							} else {
+								if(document.queryCommandState("insertorderedlist")) {
+									$(this).addClass(options.activeToolbarClass);
+								} else {
+									$(this).removeClass(options.activeToolbarClass);
+								}
+							}
+						},
+
+						execCommand: function(commandArr, selectedRange, getCurrentRange) {
+							const sC = selectedRange.startContainer;
+							const oldOL = $(getParentElement(sC)).closest("ol");
+							const isAlpha = oldOL.hasClass("alpha-list");
+							const alphaArg = commandArr[0] === "alpha";
+							
+							if(commandArr.length > 0 && isAlpha !== alphaArg) { 
+								////switching to alpha/numer
+
+								if(document.queryCommandState("insertorderedlist")) {
+									//already a ol so don't exec
+									if(alphaArg) 
+										oldOL.addClass("alpha-list");
+									else 
+										oldOL.removeClass("alpha-list");
+								} else {
+									//creating new ol, so exec
+									document.execCommand("insertorderedlist");
+									
+									const newRange = getCurrentRange();
+									const start = $(newRange.startContainer);
+									const closest = start.closest("ol");
+									
+									if(alphaArg) 
+										closest.addClass("alpha-list");
+								}
+							} else {
+								//toggling ol - defaults to numer, so just exec - this will either get rid of ol or create a new one
+								document.execCommand("insertorderedlist");
+							}
+						}
+					}
+				}
+			});
+
+			$(".dropdown-menu > input").click(function (e) {
+        		e.stopPropagation();
+    		});
+			</script>
+	</body>
+</html>
